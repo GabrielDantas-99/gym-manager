@@ -1,5 +1,20 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { Loader2, Dumbbell, Eye, EyeOff } from "lucide-react";
+
+import { registerSchema, type RegisterFormData } from "@/lib/schemas";
+import { registerUser } from "@/lib/api/auth";
+import { useAuth } from "@/lib/hooks/use-auth";
+import type { Role } from "@/lib/types";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -14,14 +29,54 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-import { Button } from "@/components/ui/button";
-import { Dumbbell } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import Link from "next/link";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const { login } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const form = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      nome: "",
+      email: "",
+      senha: "",
+      telefone: "",
+      role: undefined,
+    },
+  });
+
+  const onSubmit = async (data: RegisterFormData) => {
+    setIsSubmitting(true);
+    try {
+      const response = await registerUser(data);
+      login(response);
+      toast.success("Conta criada com sucesso!");
+
+      const redirectMap: Record<Role, string> = {
+        ADMIN: "/admin",
+        PERSONAL: "/personal",
+        ALUNO: "/aluno",
+      };
+      router.push(redirectMap[response.role]);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Erro ao criar conta",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
       <div className="w-full max-w-md">
@@ -45,42 +100,126 @@ export default function RegisterPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form className="space-y-4">
-              <div>
-                <Label>Nome</Label>
-                <Input placeholder="Seu nome completo" />
-              </div>
-              <div>
-                <Label>E-mail</Label>
-                <Input type="email" placeholder="seu@email.com" />
-              </div>
-              <div>
-                <Label>Senha</Label>
-                <div className="relative">
-                  <Input type={"password"} placeholder="Minimo 6 caracteres" />
-                </div>
-              </div>
-              <div>
-                <Label>Telefone (opcional)</Label>
-                <Input placeholder="(11) 99999-9999" />
-              </div>
-              <div>
-                <Label>Perfil</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione seu perfil" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ADMIN">Administrador</SelectItem>
-                    <SelectItem value="PERSONAL">Personal Trainer</SelectItem>
-                    <SelectItem value="ALUNO">Aluno</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button type="submit" className="w-full">
-                Criar Conta
-              </Button>
-            </form>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
+                <FormField
+                  control={form.control}
+                  name="nome"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Seu nome completo" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>E-mail</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="seu@email.com"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="senha"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Senha</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Minimo 6 caracteres"
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            aria-label={
+                              showPassword ? "Ocultar senha" : "Mostrar senha"
+                            }
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="telefone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Telefone (opcional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="(11) 99999-9999" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Perfil</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione seu perfil" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="ADMIN">Administrador</SelectItem>
+                          <SelectItem value="PERSONAL">
+                            Personal Trainer
+                          </SelectItem>
+                          <SelectItem value="ALUNO">Aluno</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  Criar Conta
+                </Button>
+              </form>
+            </Form>
             <div className="mt-6 text-center text-sm text-muted-foreground">
               Ja tem uma conta?{" "}
               <Link
