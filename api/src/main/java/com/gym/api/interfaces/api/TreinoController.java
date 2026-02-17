@@ -10,7 +10,9 @@ import com.gym.api.application.dto.CreateFichaTreinoRequest;
 import com.gym.api.application.dto.FichaTreinoResponse;
 import com.gym.api.application.usecase.CreateFichaTreinoUseCase;
 import com.gym.api.application.usecase.GetFichasTreinoByAlunoUseCase;
+import com.gym.api.application.usecase.MarcarTreinoConcluidoUseCase;
 import com.gym.api.application.usecase.UpdateFichaTreinoUseCase;
+import com.gym.api.infraestructure.security.annotation.IsAluno;
 import com.gym.api.infraestructure.security.annotation.IsPersonal;
 
 import java.util.List;
@@ -23,6 +25,7 @@ public class TreinoController {
   private final CreateFichaTreinoUseCase createFichaTreinoUseCase;
   private final GetFichasTreinoByAlunoUseCase getFichasTreinoByAlunoUseCase;
   private final UpdateFichaTreinoUseCase updateFichaTreinoUseCase;
+  private final MarcarTreinoConcluidoUseCase marcarTreinoConcluidoUseCase;
 
   @PostMapping("/fichas")
   @IsPersonal
@@ -44,6 +47,13 @@ public class TreinoController {
       @Valid @RequestBody CreateFichaTreinoRequest request) {
     FichaTreinoResponse response = updateFichaTreinoUseCase.execute(id, request);
     return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/fichas/{id}/concluir")
+  @IsAluno
+  public ResponseEntity<Void> marcarConcluido(@PathVariable Long id) {
+    marcarTreinoConcluidoUseCase.execute(id);
+    return ResponseEntity.noContent().build();
   }
 
 }
