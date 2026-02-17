@@ -18,7 +18,7 @@ public class FichaTreino {
   private Long personalId;
   private DiaSemana diaSemana;
   private String grupoMuscular;
-  private boolean ativa;
+  private Boolean ativa;
   private LocalDateTime dataCriacao;
   private LocalDateTime dataAtualizacao;
 
