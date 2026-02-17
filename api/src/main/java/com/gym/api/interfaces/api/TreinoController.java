@@ -10,6 +10,7 @@ import com.gym.api.application.dto.CreateFichaTreinoRequest;
 import com.gym.api.application.dto.FichaTreinoResponse;
 import com.gym.api.application.usecase.CreateFichaTreinoUseCase;
 import com.gym.api.application.usecase.GetFichasTreinoByAlunoUseCase;
+import com.gym.api.application.usecase.UpdateFichaTreinoUseCase;
 import com.gym.api.infraestructure.security.annotation.IsPersonal;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class TreinoController {
 
   private final CreateFichaTreinoUseCase createFichaTreinoUseCase;
   private final GetFichasTreinoByAlunoUseCase getFichasTreinoByAlunoUseCase;
+  private final UpdateFichaTreinoUseCase updateFichaTreinoUseCase;
 
   @PostMapping("/fichas")
   @IsPersonal
@@ -32,6 +34,15 @@ public class TreinoController {
   @GetMapping("/fichas/aluno/{alunoId}")
   public ResponseEntity<List<FichaTreinoResponse>> getFichasByAluno(@PathVariable Long alunoId) {
     List<FichaTreinoResponse> response = getFichasTreinoByAlunoUseCase.execute(alunoId);
+    return ResponseEntity.ok(response);
+  }
+
+  @PutMapping("/fichas/{id}")
+  @IsPersonal
+  public ResponseEntity<FichaTreinoResponse> updateFicha(
+      @PathVariable Long id,
+      @Valid @RequestBody CreateFichaTreinoRequest request) {
+    FichaTreinoResponse response = updateFichaTreinoUseCase.execute(id, request);
     return ResponseEntity.ok(response);
   }
 
