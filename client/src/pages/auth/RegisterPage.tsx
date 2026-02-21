@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link } from "react-router-dom";
-import { Dumbbell, Mail, Lock, User, Phone } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Loader2, Dumbbell, Mail, Lock, User, Phone } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +24,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { registerSchema, type RegisterFormData } from "@/lib/schemas/auth";
+import { register as registerUser } from "@/lib/api/auth";
+import { getDashboardByRole } from "@/lib/auth/session";
+import { handleApiError } from "@/lib/api/error-handler";
 
 const roleDescriptions = {
   ADMIN: "Gerencia academias, finanças e usuários",
@@ -30,8 +35,12 @@ const roleDescriptions = {
 };
 
 const RegisterPage = () => {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+
   const {
     register,
+    handleSubmit,
     setValue,
     formState: { errors },
   } = useForm<RegisterFormData>({
@@ -45,6 +54,23 @@ const RegisterPage = () => {
       ALUNO: "",
     };
     return role ?? labels[role];
+  };
+
+  const onSubmit = async (data: RegisterFormData) => {
+    setIsLoading(true);
+    try {
+      const payload = {
+        ...data,
+        telefone: data.telefone || undefined,
+      };
+      const response = await registerUser(payload as any);
+      toast.success("Conta criada com sucesso!");
+      navigate(getDashboardByRole(response.role));
+    } catch (error) {
+      toast.error(handleApiError(error));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -61,14 +87,14 @@ const RegisterPage = () => {
         </div>
 
         <Card>
-          <CardHeader className="space-y-1">
+          <CardHeader className="gap-0">
             <CardTitle className="text-xl">Cadastro</CardTitle>
             <CardDescription>
               Preencha os dados para criar sua conta
             </CardDescription>
           </CardHeader>
 
-          <form>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="nome">Nome</Label>
@@ -171,7 +197,8 @@ const RegisterPage = () => {
             </CardContent>
 
             <CardFooter className="flex flex-col gap-4 mt-6">
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Criar conta
               </Button>
               <p className="text-sm text-muted-foreground">

@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link } from "react-router-dom";
-import { Dumbbell, Mail, Lock } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Loader2, Dumbbell, Mail, Lock } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,14 +17,37 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { loginSchema, type LoginFormData } from "@/lib/schemas/auth";
+import { login } from "@/lib/api/auth";
+import { getDashboardByRole } from "@/lib/auth/session";
+import { handleApiError } from "@/lib/api/error-handler";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+
   const {
     register,
+    handleSubmit,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
+
+  const onSubmit = async (formData: LoginFormData) => {
+    setIsLoading(true);
+    try {
+      const response = await login({
+        email: formData.email,
+        senha: formData.senha,
+      });
+      toast.success(`Bem-vindo, ${response.nome}!`);
+      navigate(getDashboardByRole(response.role));
+    } catch (error: any) {
+      toast.error(handleApiError(error));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -40,12 +65,12 @@ const LoginPage = () => {
         </div>
 
         <Card>
-          <CardHeader className="space-y-1">
+          <CardHeader className="gap-0">
             <CardTitle className="text-xl">Entrar</CardTitle>
             <CardDescription>Acesse sua conta para continuar</CardDescription>
           </CardHeader>
 
-          <form>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -92,7 +117,8 @@ const LoginPage = () => {
             </CardContent>
 
             <CardFooter className="flex flex-col gap-4 mt-4">
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Entrar
               </Button>
               <p className="text-sm text-muted-foreground">

@@ -26,7 +26,7 @@ export function hasRole(role: Role): boolean {
 export function logout(): void {
   localStorage.removeItem("gym_token");
   localStorage.removeItem("gym_user");
-  window.location.href = "/login";
+  globalThis.location.href = "/login";
 }
 
 export function getDashboardByRole(role: Role): string {
