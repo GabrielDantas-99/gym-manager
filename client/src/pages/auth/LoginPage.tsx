@@ -1,3 +1,11 @@
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Link } from "react-router-dom";
+import { Dumbbell, Mail, Lock } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -6,14 +14,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Dumbbell, Lock, Mail } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { loginSchema, type LoginFormData } from "@/lib/schemas/auth";
 
 const LoginPage = () => {
+  const {
+    register,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md space-y-8">
@@ -46,8 +56,14 @@ const LoginPage = () => {
                     type="email"
                     placeholder="seu@email.com"
                     className="pl-10"
+                    {...register("email")}
                   />
                 </div>
+                {errors.email && (
+                  <p className="text-sm text-destructive">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -59,8 +75,14 @@ const LoginPage = () => {
                     type="password"
                     placeholder="••••••"
                     className="pl-10"
+                    {...register("senha")}
                   />
                 </div>
+                {errors.senha && (
+                  <p className="text-sm text-destructive">
+                    {errors.senha.message}
+                  </p>
+                )}
                 <div className="w-full text-right">
                   <Link className="underline" to={"/recuperar-senha"}>
                     Esqueceu a senha?

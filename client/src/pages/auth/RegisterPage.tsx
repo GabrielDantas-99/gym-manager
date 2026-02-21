@@ -1,3 +1,11 @@
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Link } from "react-router-dom";
+import { Dumbbell, Mail, Lock, User, Phone } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -6,7 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Dumbbell, Lock, Mail, Phone, User } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -14,11 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { registerSchema, type RegisterFormData } from "@/lib/schemas/auth";
 
 const roleDescriptions = {
   ADMIN: "Gerencia academias, finanças e usuários",
@@ -26,16 +29,24 @@ const roleDescriptions = {
   ALUNO: "Visualiza treinos e mensalidades",
 };
 
-const getRoleLabel = (role: string) => {
-  const labels = {
-    ADMIN: "",
-    PERSONAL: "",
-    ALUNO: "",
-  };
-  return role ?? labels[role];
-};
-
 const RegisterPage = () => {
+  const {
+    register,
+    setValue,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+  });
+
+  const getRoleLabel = (role: string) => {
+    const labels = {
+      ADMIN: "",
+      PERSONAL: "",
+      ALUNO: "",
+    };
+    return role ?? labels[role];
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
       <div className="w-full max-w-md space-y-8">
@@ -67,8 +78,14 @@ const RegisterPage = () => {
                     id="nome"
                     placeholder="Seu nome completo"
                     className="pl-10"
+                    {...register("nome")}
                   />
                 </div>
+                {errors.nome && (
+                  <p className="text-sm text-destructive">
+                    {errors.nome.message}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -80,8 +97,14 @@ const RegisterPage = () => {
                     type="email"
                     placeholder="seu@email.com"
                     className="pl-10"
+                    {...register("email")}
                   />
                 </div>
+                {errors.email && (
+                  <p className="text-sm text-destructive">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -93,8 +116,14 @@ const RegisterPage = () => {
                     type="password"
                     placeholder="Mínimo 6 caracteres"
                     className="pl-10"
+                    {...register("senha")}
                   />
                 </div>
+                {errors.senha && (
+                  <p className="text-sm text-destructive">
+                    {errors.senha.message}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -105,13 +134,16 @@ const RegisterPage = () => {
                     id="telefone"
                     placeholder="(11) 99999-9999"
                     className="pl-10"
+                    {...register("telefone")}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label>Perfil</Label>
-                <Select>
+                <Select
+                  onValueChange={(value) => setValue("role", value as any)}
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecione seu perfil" />
                   </SelectTrigger>
@@ -130,6 +162,11 @@ const RegisterPage = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.role && (
+                  <p className="text-sm text-destructive">
+                    {errors.role.message}
+                  </p>
+                )}
               </div>
             </CardContent>
 
