@@ -14,6 +14,7 @@ import RegisterPage from "./pages/auth/RegisterPage";
 import { Role } from "@/types/common";
 import { TooltipProvider } from "./components/ui/tooltip";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
+import UsuariosPage from "./pages/admin/UsuariosPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,6 +71,16 @@ const App = () => (
               <ProtectedRoute allowedRoles={[Role.ADMIN]}>
                 <AppLayout>
                   <AcademiasPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/usuarios"
+            element={
+              <ProtectedRoute allowedRoles={[Role.ADMIN]}>
+                <AppLayout>
+                  <UsuariosPage />
                 </AppLayout>
               </ProtectedRoute>
             }
