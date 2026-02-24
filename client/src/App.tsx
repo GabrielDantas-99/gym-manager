@@ -15,6 +15,7 @@ import { Role } from "@/types/common";
 import { TooltipProvider } from "./components/ui/tooltip";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import UsuariosPage from "./pages/admin/UsuariosPage";
+import VinculosPage from "./pages/admin/VinculosPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -81,6 +82,16 @@ const App = () => (
               <ProtectedRoute allowedRoles={[Role.ADMIN]}>
                 <AppLayout>
                   <UsuariosPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/vinculos"
+            element={
+              <ProtectedRoute allowedRoles={[Role.ADMIN]}>
+                <AppLayout>
+                  <VinculosPage />
                 </AppLayout>
               </ProtectedRoute>
             }
