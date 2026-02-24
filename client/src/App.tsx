@@ -3,6 +3,7 @@ import { ProtectedRoute, PublicOnlyRoute } from "./components/ProtectedRoute";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster as Sonner, Toaster } from "@/components/ui/sonner";
 
+import AcademiasPage from "./pages/admin/AcademiasPage";
 import AdminDashboard from "./pages/admin/DashboardPage";
 import AlunoDashboard from "./pages/aluno/DashboardPage";
 import AppLayout from "@/components/layouts/AppLayout";
@@ -63,6 +64,17 @@ const App = () => (
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin/academias"
+            element={
+              <ProtectedRoute allowedRoles={[Role.ADMIN]}>
+                <AppLayout>
+                  <AcademiasPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+
           {/* Personal */}
           <Route
             path="/personal/dashboard"
